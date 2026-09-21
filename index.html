@@ -44,9 +44,19 @@
           <div><span class="label">ROCKET LEAGUE</span><strong class="tracker-place">num00goalkeeper</strong></div>
           <span class="tracker-badge">EPIC</span>
         </div>
-        <div class="tracker-title"><span class="rocket-mark">◆</span><span>Competitive MMR</span><button id="refresh-tracker" class="icon-button" type="button" aria-label="Refresh Rocket League MMR">↻</button></div>
-        <div id="mmr-list" class="mmr-list"><div class="mmr-loading">Loading ranks…</div></div>
-        <div id="tracker-status" class="tracker-status">TRACKER NETWORK</div>
+        <div class="tracker-title"><span class="rocket-mark">◆</span><span>Ranked Doubles</span></div>
+        <div class="tracker-switcher" role="tablist" aria-label="Rocket League display mode">
+          <button class="tracker-tab is-active" type="button" data-tracker-view="native" role="tab" aria-selected="true">Aurora card</button>
+          <a class="tracker-tab tracker-link" href="https://tracker.gg/overlays/overlay/078ef871-a562-4cde-b4f2-d839f2dcbb3e" target="_blank" rel="noopener" role="tab">Open for OBS ↗</a>
+        </div>
+        <div id="native-mmr" class="native-mmr">
+          <div class="native-rank-icon">◆</div>
+          <div><span class="native-mmr-label">CURRENT MMR</span><strong id="mmr-value">—</strong><span id="mmr-rank" class="native-rank">Configure mmr-api-v2</span></div>
+        </div>
+        <div id="tracker-embed" class="tracker-embed" hidden>
+          <div class="overlay-frame"><iframe id="tracker-overlay" title="Tracker.gg Rocket League Ranked Doubles overlay" src="https://tracker.gg/overlays/overlay/078ef871-a562-4cde-b4f2-d839f2dcbb3e" loading="lazy" referrerpolicy="no-referrer"></iframe></div>
+        </div>
+        <div id="tracker-status" class="tracker-status">AURORA CARD · TRACKER OVERLAY LINK ABOVE</div>
       </aside>
       </div>
     </section>

@@ -9,7 +9,11 @@ let spotifyPoll;
 function storedSetting(name) { return localStorage.getItem(`ambient-${name}`) || config[name] || ""; }
 function weatherKey() { return storedSetting("openWeatherKey"); }
 function spotifyClientId() { return storedSetting("spotifyClientId"); }
-function spotifyRedirectUri() { return storedSetting("spotifyRedirectUri") || `${window.location.origin}/callback`; }
+function defaultSpotifyRedirectUri() { return new URL("./", window.location.href).href; }
+function spotifyRedirectUri() {
+  const saved = storedSetting("spotifyRedirectUri");
+  return saved && (window.location.hostname === "localhost" || !saved.includes("localhost")) ? saved : defaultSpotifyRedirectUri();
+}
 
 function initCanvas() {
   const canvas = $("#ambient-canvas");
@@ -221,7 +225,7 @@ $("#clear-api-settings").addEventListener("click", () => {
 $("#settings-button").addEventListener("click", () => {
   $("#openweather-key").value = storedSetting("openWeatherKey");
   $("#spotify-client-id").value = storedSetting("spotifyClientId");
-  $("#spotify-redirect-uri").value = storedSetting("spotifyRedirectUri") || `${window.location.origin}/callback`;
+  $("#spotify-redirect-uri").value = spotifyRedirectUri();
 });
 $("#clock").addEventListener("click", () => { const form = $("#countdown-form"); form.hidden = !form.hidden; if (!form.hidden) { $("#countdown-title").value = countdownName === "YOUR EVENT" ? "" : countdownName; $("#countdown-title").focus(); } });
 $("#close-settings").addEventListener("click", () => setSettings(false));

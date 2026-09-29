@@ -1,4 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
+const landscapeMode = window.matchMedia("(orientation: landscape)");
+if (landscapeMode.matches) document.body.classList.add("landscape-ready");
+landscapeMode.addEventListener("change", () => window.location.reload());
 const config = window.APP_CONFIG || {};
 const fallbackWeather = { temp: 72, feels: 72, condition: "Clear skies", icon: "☀", high: 75, low: 61 };
 const spotifyScopes = "user-read-currently-playing user-read-playback-state user-modify-playback-state";
@@ -181,13 +184,23 @@ async function spotifyRequest(path, options = {}, retry = true) {
   const response = await fetch(`https://api.spotify.com/v1${path}`, { ...options, headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
   if (response.status === 401 && retry && await refreshSpotifyToken()) return spotifyRequest(path, options, false);
   if (response.status === 204) return {};
+  if (response.status === 403) throw new Error("Spotify playback requires an active Premium device");
+  if (response.status === 404) throw new Error("Spotify has no active playback device");
   if (!response.ok) throw new Error(`Spotify request failed: ${response.status}`);
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return {};
   return response.json();
 }
 function formatTrackTime(milliseconds = 0) { const seconds = Math.floor(milliseconds / 1000); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
 async function updateSpotifyCard() {
-  const state = await spotifyRequest("/me/player");
-  if (!state || !state.item) { $("#spotify-device").textContent = "NOT PLAYING"; return; }
+  let state;
+  try {
+    state = await spotifyRequest("/me/player");
+  } catch (error) {
+    $("#spotify-device").textContent = error.message.includes("active") ? "OPEN SPOTIFY TO PLAY" : "SPOTIFY UNAVAILABLE";
+    return;
+  }
+  if (!state || !state.item) { $("#spotify-device").textContent = "OPEN SPOTIFY TO PLAY"; return; }
   const item = state.item;
   $("#track-title").textContent = item.name;
   $("#track-artist").textContent = `${item.artists.map((artist) => artist.name).join(", ")} · ${item.album.name}`;
@@ -195,19 +208,30 @@ async function updateSpotifyCard() {
   $(".track-time span:last-child").textContent = formatTrackTime(item.duration_ms);
   $("#progress-bar").style.width = `${Math.min(100, (state.progress_ms / item.duration_ms) * 100)}%`;
   $("#spotify-device").textContent = state.device?.name || "SPOTIFY CONNECTED";
+  const cover = item.album?.images?.[0]?.url;
+  if (cover) {
+    $(".media-widget").style.setProperty("--album-cover", `url("${cover}")`);
+    $(".album-art").style.backgroundImage = `url("${cover}")`;
+    $(".album-art").textContent = "";
+  }
   $("#play-track").textContent = state.is_playing ? "Ⅱ" : "▶";
   $("#play-track").setAttribute("aria-label", state.is_playing ? "Pause" : "Play");
 }
 async function spotifyAction(path, method = "PUT") {
-  try { await spotifyRequest(path, { method }); await updateSpotifyCard(); } catch (error) { console.error(error); showToast("Spotify playback unavailable"); }
+  try { await spotifyRequest(path, { method }); await updateSpotifyCard(); } catch (error) { console.error(error); showToast(error.message); }
 }
 function setupSpotify() {
   const connected = Boolean(localStorage.getItem("spotify-access-token"));
   $("#spotify-connect").textContent = connected ? "DISCONNECT" : "CONNECT SPOTIFY";
-  if (connected) { updateSpotifyCard(); spotifyPoll = setInterval(updateSpotifyCard, 10000); }
+  if (connected) {
+    updateSpotifyCard().catch((error) => { console.error(error); $("#spotify-device").textContent = "SPOTIFY UNAVAILABLE"; });
+    clearInterval(spotifyPoll);
+    spotifyPoll = setInterval(updateSpotifyCard, 10000);
+  }
 }
 function setSettings(open) { $("#settings-panel").classList.toggle("is-open", open); $("#settings-panel").setAttribute("aria-hidden", String(!open)); $("#settings-backdrop").hidden = !open; }
 
+if (landscapeMode.matches) {
 $("#settings-button").addEventListener("click", () => setSettings(true));
 $("#api-settings").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -258,3 +282,4 @@ $("#countdown-form").hidden = true;
 initCanvas(); updateClock(); loadWeather();
 exchangeSpotifyCode().then(setupSpotify).catch((error) => { console.error(error); showToast("Spotify login failed"); });
 setInterval(updateClock, 1000);
+}

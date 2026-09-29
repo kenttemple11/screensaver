@@ -3,84 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#08101c">
-  <title>Aurora — Ambient screensaver</title>
+  <meta name="theme-color" content="#080b12">
+  <title>Ambient — personal screensaver</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="halo" aria-hidden="true"></div>
-  <div class="noise" aria-hidden="true"></div>
-  <main class="screensaver">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="Aurora home"><span class="brand-mark"><i></i><i></i><i></i></span><span>AURORA</span></a>
-      <div class="status"><span class="status-dot"></span><span>Ambient mode</span></div>
-    </header>
-    <section class="hero" aria-label="Current time and weather">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-line"></span><span id="greeting">Good morning</span></p>
-        <time id="clock" class="clock">09:41<span class="clock-seconds">:26</span></time>
-        <p id="date" class="date">Monday, September 21, 2026</p>
+  <canvas id="ambient-canvas" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="app-shell">
+    <nav class="topbar">
+      <span></span>
+      <div class="top-actions">
+        <button id="settings-button" class="round-button" type="button" aria-label="Open widget settings">☷</button>
+        <button id="fullscreen" class="round-button" type="button" aria-label="Toggle full screen">⛶</button>
       </div>
-      <div class="side-panels">
-      <aside class="weather-card">
-        <div class="weather-header">
-          <div><span class="label">MY LOCATION</span><strong class="weather-place">Frederick, MD</strong><span class="weather-location">21704 · United States</span></div>
-          <button id="refresh-weather" class="icon-button" type="button" aria-label="Refresh weather">↻</button>
+    </nav>
+
+    <section class="stage" aria-label="Ambient screensaver">
+      <div class="clock-zone">
+        <p class="overline"><span class="overline-rule"></span><span>LOCAL TIME</span></p>
+        <button id="clock" class="clock" type="button" aria-label="Create a countdown event">09<span>:</span>41<span>:</span>08</button>
+        <div class="clock-meta"><span id="date">Monday, September 21, 2026</span></div>
+        <form id="countdown-form" class="countdown-form" hidden>
+          <input id="countdown-title" type="text" placeholder="Event name" aria-label="Event name">
+          <input id="countdown-date" type="datetime-local" aria-label="Event date and time">
+          <button id="save-countdown" type="submit" aria-label="Save countdown">+</button>
+          <button id="clear-countdown" type="button" aria-label="Clear countdown">×</button>
+        </form>
+        <div id="countdown" class="countdown" hidden>
+          <span class="countdown-label">COUNTING DOWN TO <strong id="countdown-name">YOUR EVENT</strong></span>
+          <span id="countdown-value" class="countdown-value">00d 00h 00m 00s</span>
         </div>
-        <div class="weather-main"><div><strong id="temperature">72°</strong><span id="condition">Clear skies</span><span id="weather-summary">Currently clear</span></div><span id="weather-icon" class="weather-icon" aria-hidden="true">☀</span></div>
-        <div class="weather-range"><span id="high-low">H: 75°  L: 61°</span><span id="rain-chance">0% chance of rain</span></div>
-        <div class="weather-stats">
-          <div><span>FEELS LIKE</span><strong id="feels-like">72°</strong></div>
-          <div><span>HUMIDITY</span><strong id="humidity">—</strong></div>
-          <div><span>WIND</span><strong id="wind">—</strong></div>
-        </div>
-        <div class="weather-meta"><span id="location">21704 · Frederick, MD</span><span class="weather-divider"></span><span id="updated">Updated now</span></div>
-      </aside>
-      <aside class="tracker-card">
-        <div class="tracker-header">
-          <div><span class="label">ROCKET LEAGUE</span><strong class="tracker-place">num00goalkeeper</strong></div>
-          <span class="tracker-badge">EPIC</span>
-        </div>
-        <div class="tracker-title"><span class="rocket-mark">◆</span><span>Ranked Doubles</span></div>
-        <div class="tracker-switcher" role="tablist" aria-label="Rocket League display mode">
-          <button class="tracker-tab is-active" type="button" data-tracker-view="native" role="tab" aria-selected="true">Aurora card</button>
-          <a class="tracker-tab tracker-link" href="https://tracker.gg/overlays/overlay/078ef871-a562-4cde-b4f2-d839f2dcbb3e" target="_blank" rel="noopener" role="tab">Open for OBS ↗</a>
-        </div>
-        <div id="native-mmr" class="native-mmr">
-          <div class="native-rank-icon">◆</div>
-          <div><span class="native-mmr-label">CURRENT MMR</span><strong id="mmr-value">—</strong><span id="mmr-rank" class="native-rank">Configure mmr-api-v2</span></div>
-        </div>
-        <div id="tracker-embed" class="tracker-embed" hidden>
-          <div class="overlay-frame"><iframe id="tracker-overlay" title="Tracker.gg Rocket League Ranked Doubles overlay" src="https://tracker.gg/overlays/overlay/078ef871-a562-4cde-b4f2-d839f2dcbb3e" loading="lazy" referrerpolicy="no-referrer"></iframe></div>
-        </div>
-        <div id="tracker-status" class="tracker-status">AURORA CARD · TRACKER OVERLAY LINK ABOVE</div>
-      </aside>
+      </div>
+
+      <div id="widget-grid" class="widget-grid">
+        <article id="weather-card" class="widget weather-widget" data-widget="weather" tabindex="0" role="button" aria-label="Open detailed weather forecast">
+          <div class="widget-heading"><span class="widget-kicker">LOCAL WEATHER</span><button id="refresh-weather" class="text-button" type="button">REFRESH ↻</button></div>
+          <div class="weather-body"><div><strong id="temperature">72°</strong><span id="condition">Clear skies</span><small id="weather-summary">Feels like 72°</small></div><span id="weather-icon" class="weather-icon" aria-hidden="true">☀</span></div>
+          <div class="weather-footer"><span id="location">21704 · Frederick, MD</span><span id="high-low">H: 75° · L: 61°</span></div>
+        </article>
+
+        <article class="widget media-widget" data-widget="media">
+          <div class="widget-heading"><span class="widget-kicker">NOW PLAYING</span><button id="spotify-connect" class="text-button" type="button">CONNECT SPOTIFY</button></div>
+          <div class="media-body"><div class="album-art" aria-hidden="true">◒</div><div class="track-info"><strong id="track-title">Midnight City</strong><span id="track-artist">M83 · Hurry Up, We're Dreaming</span><div class="progress"><span id="progress-bar"></span></div><div class="track-time"><span id="elapsed">2:18</span><span>4:03</span></div></div></div>
+          <div class="media-controls"><button id="previous-track" type="button" aria-label="Previous track">↢</button><button id="play-track" class="play-button" type="button" aria-label="Play">▶</button><button id="next-track" type="button" aria-label="Next track">↣</button><span id="spotify-device" class="device-name">NOT CONNECTED</span></div>
+        </article>
+
       </div>
     </section>
-    <footer class="bottombar">
-      <div class="forecast" id="forecast" aria-label="Five day forecast"></div>
-      <div class="controls">
-        <button id="pause-animation" class="control-button" type="button">Ⅱ <span>Pause motion</span></button>
-        <button id="fullscreen" class="control-button" type="button">⛶ <span>Full screen</span></button>
-      </div>
-    </footer>
+
   </main>
-  <dialog id="hourly-dialog" class="hourly-dialog" aria-labelledby="hourly-title">
-    <div class="dialog-header">
-      <div>
-        <span class="label">HOURLY FORECAST</span>
-        <h2 id="hourly-title">Tuesday</h2>
-      </div>
-      <button id="close-hourly" class="icon-button close-button" type="button" aria-label="Close hourly forecast">×</button>
-    </div>
-    <div id="hourly-list" class="hourly-list"></div>
+
+  <dialog id="weather-dialog" class="weather-dialog">
+    <div class="weather-dialog-header"><div><span class="widget-kicker">WEATHER DETAILS</span><h2 id="weather-dialog-title">Frederick, MD</h2></div><button id="close-weather" class="round-button" type="button" aria-label="Close weather details">×</button></div>
+    <div class="forecast-heading"><span class="widget-kicker">5 DAY FORECAST</span><span id="weather-updated">—</span></div>
+    <div id="forecast-list" class="forecast-list"></div>
+    <div id="weather-facts" class="weather-facts"></div>
   </dialog>
+  <aside id="settings-panel" class="settings-panel" aria-label="Widget settings" aria-hidden="true">
+    <div class="settings-header"><div><span class="widget-kicker">PERSONALIZE</span><h2>Screen setup</h2></div><button id="close-settings" class="round-button" type="button" aria-label="Close settings">×</button></div>
+    <div class="toggle-list">
+      <label><span><strong>Local weather</strong><small>Conditions and temperature</small></span><input type="checkbox" data-toggle="weather" checked><i></i></label>
+      <label><span><strong>Spotify controls</strong><small>Currently playing and transport</small></span><input type="checkbox" data-toggle="media" checked><i></i></label>
+    </div>
+    <form id="api-settings" class="api-settings">
+      <span class="widget-kicker">API CONNECTIONS</span>
+      <label for="openweather-key">OpenWeatherMap key</label>
+      <input id="openweather-key" type="password" autocomplete="off" placeholder="Paste public API key">
+      <label for="spotify-client-id">Spotify client ID</label>
+      <input id="spotify-client-id" type="text" autocomplete="off" placeholder="Paste client ID">
+      <label for="spotify-redirect-uri">Spotify redirect URI</label>
+      <input id="spotify-redirect-uri" type="url" autocomplete="url" placeholder="http://localhost:3000/callback">
+      <p class="api-note">Saved only in this browser. Never enter a Spotify client secret here.</p>
+      <div class="api-actions"><button id="clear-api-settings" class="secondary-button" type="button">CLEAR</button><button class="primary-button" type="submit">SAVE KEYS</button></div>
+    </form>
+  </aside>
+  <div id="settings-backdrop" class="settings-backdrop" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.halo.min.js"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>

@@ -1,8 +1,16 @@
-# Aurora screensaver
+# Ambient screensaver
 
-Aurora is a static ambient screensaver for an Android device. It displays the
-clock, animated Vanta background, Weatherbit conditions for ZIP code 21704,
-hourly forecasts, and optional Rocket League MMR data.
+Ambient is a static personal screensaver for an Android device or desktop
+display. It combines a large local clock with an active interstellar canvas
+surface, an optional countdown, and configurable weather and Spotify-style
+media controls.
+
+Open the settings button in the top-right corner to toggle widgets. Click the
+clock to create a countdown event with a name and date/time. The countdown date
+is stored in `localStorage` so it survives a refresh. The media card is a presentation
+control surface; connecting it to a Spotify account requires an authenticated
+Spotify integration. This site now uses Spotify Authorization Code with PKCE,
+so the client secret must never be placed in `config.js` or frontend code.
 
 ## Deploy the screensaver to Render
 
@@ -14,37 +22,26 @@ hourly forecasts, and optional Rocket League MMR data.
    the Render static-site files or a private deployment workflow.
 
 The browser must receive `config.js`, so values in that file are not secret.
-Do not put private service passwords or Rocket League credentials in it.
+Do not put private service passwords in it.
 
-## Deploy `mmr-api-v2`
+## Configure weather
 
-The MMR service must run as a separate Render web service. Fork
-[`mmr-api-v2`](https://github.com/Kalilamodow/mmr-api-v2), create a Render web
-service from the fork, and use:
-
-- Build command: `npm run build`
-- Start command: `node dist/index.js`
-
-Create `config.json` as a Render secret file. It must include the service
-password and the Rocket League version configuration required by the upstream
-project. Complete the service's bootstrap flow with an alternate Rocket League
-account, then keep the generated `saved-credentials.json` in persistent
-storage.
-
-The upstream service currently has no CORS middleware. Before using it from the
-static Aurora site, add an API middleware that allows requests from the exact
-Render URL of the Aurora site (not `*`), then redeploy the API. Without this
-change, browsers will block `/get-skills` even when the endpoint itself works.
-
-After the API is reachable, set these values in `config.js`:
+The weather card uses OpenWeatherMap's current conditions and 5-day / 3-hour
+forecast endpoint. Click the card for the detailed forecast and weather metrics.
+Without a working weather key, the site uses a local snapshot so the
+screensaver remains useful offline. Set the public browser key in `config.js`:
 
 ```js
 window.APP_CONFIG = {
-  weatherbitKey: "YOUR_WEATHERBIT_KEY",
-  mmrApiUrl: "https://YOUR-MMR-SERVICE.onrender.com",
-  mmrPlayerId: "Epic|YOUR_EPIC_ACCOUNT_ID|0"
+  openWeatherKey: "YOUR_OPENWEATHERMAP_KEY",
+  spotifyClientId: "YOUR_SPOTIFY_CLIENT_ID",
+  spotifyRedirectUri: "https://localhost:3000/callback"
 };
 ```
 
-The Aurora card requests playlist `11` (Ranked Doubles) on startup and every
-60 seconds. The player ID must be the account ID, not the visible Epic name.
+The Spotify card includes connect/disconnect, current-track polling, play/pause,
+previous, next, token refresh, and device display. Playback control requires an
+active Spotify device and typically a Spotify Premium account. Add the exact
+redirect URI to the Spotify Developer Dashboard. Do not use the exposed client
+secret from earlier setup; rotate it and leave it server-side if you later add a
+backend.

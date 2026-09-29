@@ -35,13 +35,14 @@ screensaver remains useful offline. Set the public browser key in `config.js`:
 window.APP_CONFIG = {
   openWeatherKey: "YOUR_OPENWEATHERMAP_KEY",
   spotifyClientId: "YOUR_SPOTIFY_CLIENT_ID",
-  spotifyRedirectUri: "https://localhost:3000/callback"
+  spotifyRedirectUri: "https://your-domain.example/"
 };
 ```
 
 The Spotify card includes connect/disconnect, current-track polling, play/pause,
 previous, next, token refresh, and device display. Playback control requires an
 active Spotify device and typically a Spotify Premium account. Add the exact
-redirect URI to the Spotify Developer Dashboard. Do not use the exposed client
+redirect URI to the Spotify Developer Dashboard. For GitHub Pages, use the
+deployed site root exactly, including the trailing slash. Do not use the exposed client
 secret from earlier setup; rotate it and leave it server-side if you later add a
 backend.

@@ -27,37 +27,25 @@
       </div>
     </nav>
 
-    <section class="stage" aria-label="Ambient screensaver">
-      <div class="clock-zone">
-        <p class="overline"><span class="overline-rule"></span><span>LOCAL TIME</span></p>
-        <button id="clock" class="clock" type="button" aria-label="Create a countdown event">09<span>:</span>41<span>:</span>08</button>
-        <div class="clock-meta"><span id="date">Monday, September 21, 2026</span></div>
-        <form id="countdown-form" class="countdown-form" hidden>
-          <input id="countdown-title" type="text" placeholder="Event name" aria-label="Event name">
-          <input id="countdown-date" type="datetime-local" aria-label="Event date and time">
-          <button id="save-countdown" type="submit" aria-label="Save countdown">+</button>
-          <button id="clear-countdown" type="button" aria-label="Clear countdown">×</button>
-        </form>
-        <div id="countdown" class="countdown" hidden>
-          <span class="countdown-label">COUNTING DOWN TO <strong id="countdown-name">YOUR EVENT</strong></span>
-          <span id="countdown-value" class="countdown-value">00d 00h 00m 00s</span>
+    <section class="stage media-stage" aria-label="Spotify media player">
+      <article class="media-widget media-player" data-widget="media">
+        <div class="media-cover-wrap">
+          <div class="album-art" aria-label="Album artwork"></div>
         </div>
-      </div>
-
-      <div id="widget-grid" class="widget-grid">
-        <article id="weather-card" class="widget weather-widget" data-widget="weather" tabindex="0" role="button" aria-label="Open detailed weather forecast">
-          <div class="widget-heading"><button id="refresh-weather" class="text-button" type="button">REFRESH ↻</button></div>
-          <div class="weather-body"><div><strong id="temperature">72°</strong><span id="condition">Clear skies</span><small id="weather-summary">Feels like 72°</small></div><span id="weather-icon" class="weather-icon" aria-hidden="true">☀</span></div>
-          <div class="weather-footer"><span id="high-low">H: 75° · L: 61°</span></div>
-        </article>
-
-        <article class="widget media-widget" data-widget="media">
-          <div class="widget-heading"><button id="spotify-connect" class="text-button" type="button">CONNECT SPOTIFY</button></div>
-          <div class="media-body"><div class="album-art" aria-hidden="true">◒</div><div class="track-info"><strong id="track-title">Midnight City</strong><span id="track-artist">M83 · Hurry Up, We're Dreaming</span><div class="progress"><span id="progress-bar"></span></div><div class="track-time"><span id="elapsed">2:18</span><span>4:03</span></div></div></div>
-          <div class="media-controls"><button id="previous-track" type="button" aria-label="Previous track">↢</button><button id="play-track" class="play-button" type="button" aria-label="Play">▶</button><button id="next-track" type="button" aria-label="Next track">↣</button><span id="spotify-device" class="device-name">NOT CONNECTED</span></div>
-        </article>
-
-      </div>
+        <div class="media-details">
+          <div class="track-info">
+            <strong id="track-title">Midnight City</strong>
+            <span id="track-artist">M83 · Hurry Up, We're Dreaming</span>
+          </div>
+          <div class="progress" aria-label="Track progress"><span id="progress-bar"></span></div>
+          <div class="track-time"><span id="elapsed">2:18</span><span>4:03</span></div>
+          <div class="media-controls">
+            <button id="previous-track" type="button" aria-label="Previous track"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 24 27 10v28L8 24Zm18 0 14-14v28L26 24Z"/></svg></button>
+            <button id="play-track" class="play-button" type="button" aria-label="Play"><svg class="play-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="m17 9 23 15-23 15V9Z"/></svg><svg class="pause-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M11 8h10v32H11V8Zm16 0h10v32H27V8Z"/></svg></button>
+            <button id="next-track" type="button" aria-label="Next track"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m40 24-19 14V10l19 14ZM22 24 8 38V10l14 14Z"/></svg></button>
+          </div>
+        </div>
+      </article>
     </section>
 
   </main>
@@ -83,7 +71,7 @@
       <label for="spotify-redirect-uri">Spotify redirect URI</label>
       <input id="spotify-redirect-uri" type="url" autocomplete="url" placeholder="http://localhost:3000/callback">
       <p class="api-note">Saved only in this browser. Never enter a Spotify client secret here.</p>
-      <div class="api-actions"><button id="clear-api-settings" class="secondary-button" type="button">CLEAR</button><button class="primary-button" type="submit">SAVE KEYS</button></div>
+      <div class="api-actions"><button id="spotify-connect" class="secondary-button" type="button">CONNECT SPOTIFY</button><button id="clear-api-settings" class="secondary-button" type="button">CLEAR</button><button class="primary-button" type="submit">SAVE KEYS</button></div>
     </form>
   </aside>
   <div id="settings-backdrop" class="settings-backdrop" hidden></div>

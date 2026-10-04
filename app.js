@@ -192,29 +192,42 @@ async function spotifyRequest(path, options = {}, retry = true) {
   return response.json();
 }
 function formatTrackTime(milliseconds = 0) { const seconds = Math.floor(milliseconds / 1000); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
+function setAlbumColor(imageUrl) {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0, 1, 1);
+    const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
+    document.documentElement.style.setProperty("--album-color", `rgb(${red}, ${green}, ${blue})`);
+    document.documentElement.style.setProperty("--album-color-deep", `rgb(${Math.round(red * .45)}, ${Math.round(green * .45)}, ${Math.round(blue * .45)})`);
+  };
+  image.src = imageUrl;
+}
 async function updateSpotifyCard() {
   let state;
   try {
     state = await spotifyRequest("/me/player");
   } catch (error) {
-    $("#spotify-device").textContent = error.message.includes("active") ? "OPEN SPOTIFY TO PLAY" : "SPOTIFY UNAVAILABLE";
     return;
   }
-  if (!state || !state.item) { $("#spotify-device").textContent = "OPEN SPOTIFY TO PLAY"; return; }
+  if (!state || !state.item) return;
   const item = state.item;
   $("#track-title").textContent = item.name;
   $("#track-artist").textContent = `${item.artists.map((artist) => artist.name).join(", ")} · ${item.album.name}`;
   $("#elapsed").textContent = formatTrackTime(state.progress_ms);
   $(".track-time span:last-child").textContent = formatTrackTime(item.duration_ms);
   $("#progress-bar").style.width = `${Math.min(100, (state.progress_ms / item.duration_ms) * 100)}%`;
-  $("#spotify-device").textContent = state.device?.name || "SPOTIFY CONNECTED";
   const cover = item.album?.images?.[0]?.url;
   if (cover) {
     $(".media-widget").style.setProperty("--album-cover", `url("${cover}")`);
     $(".album-art").style.backgroundImage = `url("${cover}")`;
     $(".album-art").textContent = "";
+    setAlbumColor(cover);
   }
-  $("#play-track").textContent = state.is_playing ? "Ⅱ" : "▶";
+  $("#play-track").classList.toggle("is-playing", state.is_playing);
   $("#play-track").setAttribute("aria-label", state.is_playing ? "Pause" : "Play");
 }
 async function spotifyAction(path, method = "PUT") {
@@ -224,7 +237,7 @@ function setupSpotify() {
   const connected = Boolean(localStorage.getItem("spotify-access-token"));
   $("#spotify-connect").textContent = connected ? "DISCONNECT" : "CONNECT SPOTIFY";
   if (connected) {
-    updateSpotifyCard().catch((error) => { console.error(error); $("#spotify-device").textContent = "SPOTIFY UNAVAILABLE"; });
+    updateSpotifyCard().catch((error) => { console.error(error); });
     clearInterval(spotifyPoll);
     spotifyPoll = setInterval(updateSpotifyCard, 10000);
   }
@@ -239,47 +252,32 @@ $("#api-settings").addEventListener("submit", (event) => {
     const value = $(selector).value.trim();
     if (value) localStorage.setItem(`ambient-${name}`, value); else localStorage.removeItem(`ambient-${name}`);
   });
-  loadWeather(); setupSpotify(); setSettings(false); showToast("Settings saved");
+  setupSpotify(); setSettings(false); showToast("Settings saved");
 });
 $("#clear-api-settings").addEventListener("click", () => {
   ["openWeatherKey", "spotifyClientId", "spotifyRedirectUri"].forEach((name) => localStorage.removeItem(`ambient-${name}`));
   $("#openweather-key").value = ""; $("#spotify-client-id").value = ""; $("#spotify-redirect-uri").value = "";
-  loadWeather(); setupSpotify(); showToast("Saved settings cleared");
+  setupSpotify(); showToast("Saved settings cleared");
 });
 $("#settings-button").addEventListener("click", () => {
   $("#openweather-key").value = storedSetting("openWeatherKey");
   $("#spotify-client-id").value = storedSetting("spotifyClientId");
   $("#spotify-redirect-uri").value = spotifyRedirectUri();
 });
-$("#clock").addEventListener("click", () => { const form = $("#countdown-form"); form.hidden = !form.hidden; if (!form.hidden) { $("#countdown-title").value = countdownName === "YOUR EVENT" ? "" : countdownName; $("#countdown-title").focus(); } });
 $("#close-settings").addEventListener("click", () => setSettings(false));
 $("#settings-backdrop").addEventListener("click", () => setSettings(false));
 document.querySelectorAll("[data-toggle]").forEach((input) => input.addEventListener("change", (event) => {
-  $(`[data-widget="${event.target.dataset.toggle}"]`).hidden = !event.target.checked;
+  const widget = $(`[data-widget="${event.target.dataset.toggle}"]`);
+  if (widget) widget.hidden = !event.target.checked;
 }));
-$("#countdown-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const target = $("#countdown-date").value;
-  if (!target || !$("#countdown-title").value.trim()) { showToast("Add an event name and time"); return; }
-  countdownTarget = target; countdownName = $("#countdown-title").value.trim().toUpperCase() || "YOUR EVENT";
-  localStorage.setItem("ambient-countdown", target); localStorage.setItem("ambient-countdown-name", countdownName); updateCountdown(); $("#countdown-form").hidden = true;
-});
-$("#clear-countdown").addEventListener("click", () => { countdownTarget = ""; countdownName = "YOUR EVENT"; localStorage.removeItem("ambient-countdown"); localStorage.removeItem("ambient-countdown-name"); $("#countdown").hidden = true; $("#countdown-form").hidden = true; });
-$("#weather-card").addEventListener("click", (event) => { if (event.target.closest("#refresh-weather")) return; renderWeatherDetails(); $("#weather-dialog").showModal(); });
-$("#weather-card").addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); renderWeatherDetails(); $("#weather-dialog").showModal(); } });
-$("#refresh-weather").addEventListener("click", (event) => { event.stopPropagation(); loadWeather(); });
-$("#close-weather").addEventListener("click", () => $("#weather-dialog").close());
 $("#fullscreen").addEventListener("click", () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
 $("#spotify-connect").addEventListener("click", async () => {
   if (localStorage.getItem("spotify-access-token")) { localStorage.removeItem("spotify-access-token"); localStorage.removeItem("spotify-refresh-token"); localStorage.removeItem("spotify-expires-at"); clearInterval(spotifyPoll); setupSpotify(); return; }
   try { await startSpotifyLogin(); } catch (error) { console.error(error); showToast("Spotify login unavailable"); }
 });
-$("#play-track").addEventListener("click", () => spotifyAction($("#play-track").textContent === "Ⅱ" ? "/me/player/pause" : "/me/player/play"));
+$("#play-track").addEventListener("click", () => spotifyAction($("#play-track").classList.contains("is-playing") ? "/me/player/pause" : "/me/player/play"));
 $("#next-track").addEventListener("click", () => spotifyAction("/me/player/next", "POST"));
 $("#previous-track").addEventListener("click", () => spotifyAction("/me/player/previous", "POST"));
 
-$("#countdown-form").hidden = true;
-updateClock(); loadWeather();
 exchangeSpotifyCode().then(setupSpotify).catch((error) => { console.error(error); showToast("Spotify login failed"); });
-setInterval(updateClock, 1000);
 }

@@ -104,3 +104,18 @@ html,body{background:#050403;color:var(--ink);font-family:-apple-system,BlinkMac
   .media-stage .media-player{grid-template-columns:minmax(0,1fr);gap:30px}
   .media-cover-wrap{border-radius:18px}
 }
+html,body{width:100%;height:100%;overflow:hidden}
+.app-shell{height:100dvh;min-height:0;overflow:hidden}
+.stage{min-height:0}
+.media-stage{padding-block:clamp(16px,3vh,38px)}
+.media-stage .media-player{width:min(1120px,100%);max-height:calc(100dvh - 150px);min-height:0}
+.media-cover-wrap{width:min(46vw,calc(100dvh - 190px));max-width:100%;height:min(46vw,calc(100dvh - 190px));aspect-ratio:auto;align-self:center}
+.media-player .album-art{width:100%;height:100%;aspect-ratio:auto;min-height:0;max-height:none;background-repeat:no-repeat;background-position:center;background-size:contain;background-color:#000}
+.media-details{min-height:0;max-height:100%;overflow:hidden}
+@media(max-width:760px){
+  .app-shell{height:auto;min-height:100dvh;overflow:hidden}
+  .media-stage{padding-block:12px}
+  .media-stage .media-player{max-height:none}
+  .media-cover-wrap{width:min(78vw,calc(100dvh - 280px));height:min(78vw,calc(100dvh - 280px))}
+  .media-player .album-art{max-height:none}
+}

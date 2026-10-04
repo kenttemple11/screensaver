@@ -9,6 +9,8 @@ let countdownTarget = localStorage.getItem("ambient-countdown") || "";
 let countdownName = localStorage.getItem("ambient-countdown-name") || "YOUR EVENT";
 let weatherData;
 let spotifyPoll;
+let spotifyState;
+let spotifyStateAt = 0;
 function storedSetting(name) { return localStorage.getItem(`ambient-${name}`) || config[name] || ""; }
 function weatherKey() { return storedSetting("openWeatherKey"); }
 function spotifyClientId() { return storedSetting("spotifyClientId"); }
@@ -192,6 +194,13 @@ async function spotifyRequest(path, options = {}, retry = true) {
   return response.json();
 }
 function formatTrackTime(milliseconds = 0) { const seconds = Math.floor(milliseconds / 1000); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
+function renderSpotifyProgress() {
+  if (!spotifyState?.item) return;
+  const elapsed = spotifyState.progress_ms + (spotifyState.is_playing ? Date.now() - spotifyStateAt : 0);
+  const progress = Math.min(spotifyState.item.duration_ms, elapsed);
+  $("#elapsed").textContent = formatTrackTime(progress);
+  $("#progress-bar").style.width = `${Math.min(100, (progress / spotifyState.item.duration_ms) * 100)}%`;
+}
 function setAlbumColor(imageUrl) {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -214,12 +223,13 @@ async function updateSpotifyCard() {
     return;
   }
   if (!state || !state.item) return;
+  spotifyState = state;
+  spotifyStateAt = Date.now();
   const item = state.item;
   $("#track-title").textContent = item.name;
   $("#track-artist").textContent = `${item.artists.map((artist) => artist.name).join(", ")} · ${item.album.name}`;
-  $("#elapsed").textContent = formatTrackTime(state.progress_ms);
   $(".track-time span:last-child").textContent = formatTrackTime(item.duration_ms);
-  $("#progress-bar").style.width = `${Math.min(100, (state.progress_ms / item.duration_ms) * 100)}%`;
+  renderSpotifyProgress();
   const cover = item.album?.images?.[0]?.url;
   if (cover) {
     $(".media-widget").style.setProperty("--album-cover", `url("${cover}")`);
@@ -239,7 +249,7 @@ function setupSpotify() {
   if (connected) {
     updateSpotifyCard().catch((error) => { console.error(error); });
     clearInterval(spotifyPoll);
-    spotifyPoll = setInterval(updateSpotifyCard, 10000);
+    spotifyPoll = setInterval(updateSpotifyCard, 5000);
   }
 }
 function setSettings(open) { $("#settings-panel").classList.toggle("is-open", open); $("#settings-panel").setAttribute("aria-hidden", String(!open)); $("#settings-backdrop").hidden = !open; }
@@ -280,4 +290,5 @@ $("#next-track").addEventListener("click", () => spotifyAction("/me/player/next"
 $("#previous-track").addEventListener("click", () => spotifyAction("/me/player/previous", "POST"));
 
 exchangeSpotifyCode().then(setupSpotify).catch((error) => { console.error(error); showToast("Spotify login failed"); });
+setInterval(renderSpotifyProgress, 1000);
 }

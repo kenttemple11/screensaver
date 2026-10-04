@@ -279,7 +279,7 @@ $("#next-track").addEventListener("click", () => spotifyAction("/me/player/next"
 $("#previous-track").addEventListener("click", () => spotifyAction("/me/player/previous", "POST"));
 
 $("#countdown-form").hidden = true;
-initCanvas(); updateClock(); loadWeather();
+updateClock(); loadWeather();
 exchangeSpotifyCode().then(setupSpotify).catch((error) => { console.error(error); showToast("Spotify login failed"); });
 setInterval(updateClock, 1000);
 }

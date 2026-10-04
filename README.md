@@ -1,9 +1,9 @@
 # Ambient screensaver
 
-Ambient is a static personal screensaver for an Android device or desktop
-display. It combines a large local clock with an active interstellar canvas
-surface, an optional countdown, and configurable weather and Spotify-style
-media controls.
+Ambient is a static Spotify-focused screensaver for an Android device or
+desktop display. It presents a large square album artwork surface beside
+Spotify playback controls, track progress, and device status over an
+interstellar canvas.
 
 Open the settings button in the top-right corner to toggle widgets. Click the
 clock to create a countdown event with a name and date/time. The countdown date
